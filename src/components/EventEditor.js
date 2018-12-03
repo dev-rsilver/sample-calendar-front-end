@@ -16,6 +16,7 @@ import Time from '../core/time';
 import { ApiClient } from '../core/api/api';
 import { AuthenticationContext } from '../core/api/authentication';
 import EventInformation from '../components/EventInformation';
+import DeleteDialogContent from '../components/DeleteDialogContent';
 
 import produce from 'immer';
 
@@ -40,6 +41,11 @@ const styles = theme => ({
     eventDescription: {
         fontSize: "0.85rem"
     },
+    eventDeleteButton: {
+        display: "inline-block",
+        verticalAlign: "top",
+        float: "right"
+    },
     eventEditButton: {
         display: "inline-block",
         verticalAlign: "top",
@@ -55,7 +61,9 @@ const styles = theme => ({
     readOnlyLabel: {
         color: "#CCCCCC",
         fontSize: "0.7rem",
-        textTransform: "uppercase"
+        textTransform: "uppercase",
+        verticalAlign: "top",
+        marginTop: "5px"
     }
 });
 
@@ -67,7 +75,7 @@ class eventEditor extends Component {
         super(props);
 
         this.state = {
-            mode: "list", //One of: list, new, edit,
+            mode: "list", //One of: list, new, edit, delete
 
             /**
              * The current event that's being created or edited.
@@ -170,6 +178,39 @@ class eventEditor extends Component {
         }
 
         this.setState((state) => produce(state, draft => { draft.mode = "edit"; }));
+    }
+
+    deleteEvent = (id, e) => {
+        this.setState((state) => produce(state, draft => { 
+            draft.mode = "delete";
+            draft.event = { id: id };
+        }));
+
+        Object.freeze(this.state.event);
+    }
+
+    deleteEventConfirmed = (id) => {
+        //Remove the event from the eventsDetails, and then notify the Calendar that it needs removal.
+
+        this.setState((state) => produce(state, draft => {
+            for(var i = 0; i < draft.eventsDetails.length; i++) {
+                if(id.toLowerCase() === draft.eventsDetails[i].id.toLowerCase()) {
+                    draft.eventsDetails.splice(i, 1);
+                    break;
+                }
+            }
+        }), () => {
+            if(this.props.deleteEvent !== undefined && typeof this.props.deleteEvent !== "function") {
+                throw new Error("deleteEvent must be a function.");
+            }
+
+            //It's unnecessary to switch back to "list" mode after deletion in the Calendar component because 
+            //the EventEditor is instantiated with a "key" in Calendar that factors in the events. Deleting the 
+            //event in the Calendar component will cause a new component to be created which will already have 
+            //its mode set to list.
+
+            this.props.deleteEvent(id);
+        });
     }
 
     dialogExited = () => {
@@ -299,12 +340,19 @@ class eventEditor extends Component {
             var i = 0;
             this.state.eventsDetails.forEach((value) => {
 
-                var button = undefined;
+                var editButton = undefined;
 
                 if(value.readonly) {
-                    button = <div className={this.props.classes.readOnlyLabel}>Readonly</div>;
+                    editButton = <div className={this.props.classes.readOnlyLabel}>Readonly</div>;
                 } else {
-                    button = <Button onClick={this.editEvent.bind(this, value.id)}>Edit</Button>;
+                    editButton = <Button onClick={this.editEvent.bind(this, value.id)}>Edit</Button>;
+                }
+
+
+                var deleteButton = undefined;
+
+                if(!value.readonly) {
+                    deleteButton = <Button onClick={this.deleteEvent.bind(this, value.id)}>Delete</Button>
                 }
 
                 details.push(
@@ -315,7 +363,8 @@ class eventEditor extends Component {
                                 <div className={this.props.classes.eventDescription}>{value.description}</div>
                             </div>
                         </div>
-                        <div className={this.props.classes.eventEditButton}>{button}</div>
+                        <div className={this.props.classes.eventEditButton}>{editButton}</div>
+                        <div className={this.props.classes.eventDeleteButton}>{deleteButton}</div>
                         <div className={this.props.classes.horizontalRule} />
                     </div>
                 );
@@ -387,6 +436,20 @@ class eventEditor extends Component {
                         <Button color="primary" onClick={this.props.close}>Cancel</Button>
                 </DialogActions>
             </div>;
+        } else if(mode === "delete") {
+            //Enable deleting an event. The delete dialog encapsulates the delete/cancel buttons, so it's necessary
+            //to pass props related to that functionality.
+
+            content =
+                <div className={this.props.classes.dialog}>
+                    <DeleteDialogContent title="Delete Event: Are you sure?" 
+                                         text="You can't undo this action."
+                                         id={this.state.event.id}
+                                         close={this.props.close} 
+                                         onDelete={this.deleteEventConfirmed} />
+                </div>;
+        } else {
+            throw new Error("Unexpected mode.");
         }
         
         
@@ -410,6 +473,7 @@ const ResponsiveEventEditor = withMobileDialog()(withStyles(styles)(eventEditor)
  * @param {object} date The date which the editor should edit, in the form of: { month: number, day: number, year: number }
  * @param {function} addEvent A callback in the form of function(event) which is called when the user adds an event
  * @param {function} saveEvent A callback in the form of function(event) which is called when the user saves an existing event
+ * @param {function} deleteEvent A callback in the form of function(id) which is called when the user deletes an existing event
  * @param {array} events An array of events, in the form of: [{ id: string, title: string, description:string, readonly: string, startDate: string, stopDate: string },...].
  * Note that startDate and stopDate should be in string format such as "mm/dd/yyyy hh:mm:ss".
  *      

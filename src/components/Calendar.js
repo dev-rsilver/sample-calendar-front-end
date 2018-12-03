@@ -177,6 +177,22 @@ class styledCalendar extends Component {
         }));
     }
 
+    /**
+     * Deletes an existing event.
+     * @param {string} id Id representing the event to delete
+     */
+    deleteEvent = function(id) {
+        
+        this.setState((state) => produce(state, draft => { 
+            for(var i = 0; i < draft.events.values.length; i++) {
+                if(draft.events.values[i].id.toLowerCase() === id.toLowerCase()) {
+                    draft.events.values.splice(i, 1);
+                    break;
+                }
+            }
+        }));
+    }
+
 
     /**
      * Filters loaded events. Events are loaded with loadEvents().
@@ -447,6 +463,7 @@ class styledCalendar extends Component {
 
                                  addEvent={ (event) => { this.addEvent(event); } }
                                  saveEvent={ (event) => { this.saveEvent(event); } }
+                                 deleteEvent={ (id) => { this.deleteEvent(id); } }
 
                                  //Setting a key forces the creation of new EventEditor components in response to changes. Otherwise, it would be necessary to deal
                                  //with complex updates based on changing props within the EventEditor itself.
