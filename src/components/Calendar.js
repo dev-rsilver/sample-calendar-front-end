@@ -9,6 +9,7 @@ import Time from '../core/time';
 import Day from '../components/Day';
 
 import { EventEditor } from '../components/EventEditor';
+import ColorSelector from '../components/ColorSelector';
 
 import { AuthenticationContext } from '../core/api/authentication.js';
 import { ApiClient } from '../core/api/api';
@@ -63,7 +64,8 @@ class styledCalendar extends Component {
                 values: [],
                 error: false,
                 loaded: false
-            }
+            },
+            selectedBackgroundColor: undefined
 
         }
     }
@@ -314,6 +316,11 @@ class styledCalendar extends Component {
         this.setState((state) => produce(state, draft => { draft.showEventEditor = false }));
     }
 
+    setSelectedBackgroundColor = (color) => {
+        this.setState((state) => produce(state, draft => { 
+            draft.selectedBackgroundColor = color;
+        }));
+    }
 
     render() {
         var currentMonth = this.state.selected.currentMonth;
@@ -378,7 +385,7 @@ class styledCalendar extends Component {
                              this.setSelectedDate(currentMonth, day, currentYear); 
                              this.showEventEditor();
                          }}
-                         selectedBackgroundColor = "#AABBCC"
+                         selectedBackgroundColor = {this.state.selectedBackgroundColor}
                          showToday={true}
                          events={this.filterEvents(
                             currentMonth + "/" + day + "/" + currentYear + " 00:00:00", 
@@ -426,6 +433,16 @@ class styledCalendar extends Component {
                         <Typography variant="h3" style={{ display: "inline-block", marginTop: 13, verticalAlign:"top" }}>
                         {Time.getMonthName(currentMonth)} {currentYear}</Typography>
                         {nextButton}
+
+                        <div>
+                            <Typography>
+                                Selected Day Color:
+                            </Typography>
+                            <ColorSelector 
+                                colors={["#00CCFF", "#009999", "#876FFF", "#CC0033", "#FFCC33", "#FF6633"]}
+                                onColorSelected={ (color) => { this.setSelectedBackgroundColor(color); }}
+                            />
+                        </div>
                     </div>;
 
         //Create a calendar that differs based on screen size, utilizing flex boxes and breakpoint-based rules located in
