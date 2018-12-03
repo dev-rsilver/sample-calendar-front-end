@@ -79,8 +79,8 @@ class signInCard extends Component {
     signIn = (e) => {
 
         var errors = 0;
-        errors += this.requireField("Username", errors);
-        errors += this.requireField("Password", errors);
+        errors += this.requireField("Username");
+        errors += this.requireField("Password");
 
         if(errors > 0) {
             return;
@@ -108,11 +108,11 @@ class signInCard extends Component {
      * 
      * Example usage:
      * var errors = 0;
-     * errors += this.requireField("input1", errors);
-     * errors += this.requireField("input2", errors);
+     * errors += this.requireField("input1");
+     * errors += this.requireField("input2");
      * if(errors > 0) { return; }
      * 
-     * @param {*} id The "id" of an HTML input element.
+     * @param {*} id The name of a root-level variable in state (or fieldReferences) that also has a corresponding entry in the form of [id]: { error: "" } in the state "errors" object.
      */
     requireField(id) {
         
@@ -159,7 +159,8 @@ class signInCard extends Component {
                         <TextField id="Username" 
                                    label="Username" 
                                    className={this.props.classes.inputs} 
-                                   error={this.state.errors.username.error.length > 0 } helperText={this.state.errors.username.error}
+                                   error={this.state.errors.username.error.length > 0 } 
+                                   helperText={this.state.errors.username.error}
                                    value={this.state.user}
                                    onChange={this.onChange}></TextField>
                     </div>
