@@ -72,13 +72,12 @@ class eventEditor extends Component {
             /**
              * The current event that's being created or edited.
              */
-            event: {
-                id: undefined,
-                title: undefined,
-                description: undefined,
-                startDate: undefined,
-                stopDate: undefined
-            },
+            event: undefined,
+
+            /**
+             * Determines whether errors should be shown related to event creation/editing.
+             */
+            showErrors: false,
 
             /**
              * Events with detailed information.
@@ -177,25 +176,41 @@ class eventEditor extends Component {
         //Stop creating/editing an event and return to list mode.
         this.setState((state) => produce(state, draft => {
             draft.mode = "list";
-            draft.event = undefined }));
+            draft.event = undefined;
+            draft.showErrors = false;
+        }));
     }
 
     /**
-     * Fired when the EventInformation component changes. The EventInformation component is used, for instance,
-     * to create a new event.
+     * Fired when the EventInformation component has a new/modified event. An event is only provided when the event is complete.
      */
     eventChanged = (event) => {
         this.setState((state) => produce(state, draft => {
+            event.hasValidationErrors = false;
             Object.freeze(event);
             draft.event = event;
         }));
     }
 
     /**
+     * Fired when the EventInformation component has validation errors.
+     */
+    eventHasValidationErrors = () => {
+        this.setState((state) => produce(state, draft => { 
+            if(draft.event) {
+                draft.event.hasValidationErrors = true;
+            }
+        }));
+
+        Object.freeze(this.state.event);
+    }
+
+    /**
      * Fired when the "Create Event" button is toggled.
      */
     createEvent = () => {
-        if(this.state.event === undefined) {
+        if(this.state.event === undefined || this.state.event.hasValidationErrors) {            
+            this.toggleShowErrors();
             return;
         }
 
@@ -213,6 +228,11 @@ class eventEditor extends Component {
     saveEvent = () => {
         if(this.state.event === undefined) {
             throw new Error("Event must be defined when editing.");
+        }
+
+        if(this.state.event.hasValidationErrors) {
+            this.toggleShowErrors();
+            return;
         }
 
         var id = this.state.event.id.toLowerCase();
@@ -252,6 +272,20 @@ class eventEditor extends Component {
         //Close the dialog.
         this.props.close();
     }
+
+    toggleShowErrors = () => {
+        //Show errors. Components rely on a change in the showErrors prop to determine whether
+        //to validate, so it's necessary to sequentially toggle the showErrors prop in case
+        //validation has already occurred.
+        this.setState((state) => produce(state, draft => { 
+            draft.showErrors = false;
+        }), () => {
+            this.setState((state) => produce(state, draft => {
+                draft.showErrors = true;
+            }));
+        });
+    }
+
 
     render() {
 
@@ -320,7 +354,9 @@ class eventEditor extends Component {
                     <EventInformation notifyEventChanged={this.eventChanged} 
                                       initialMonth={this.props.date.month} 
                                       initialDay={this.props.date.day} 
-                                      initialYear={this.props.date.year} />
+                                      initialYear={this.props.date.year}
+                                      showErrors={this.state.showErrors} 
+                                      hasValidationErrors={this.eventHasValidationErrors}/>
                 </DialogContent>
                 <DialogActions>
                         <Button color="primary" variant="contained" onClick={this.createEvent}>Create Event</Button>
@@ -342,7 +378,9 @@ class eventEditor extends Component {
                                       initialYear={this.props.date.year}
                                       initialTitle={this.state.event.title}
                                       initialDescription={this.state.event.description} 
-                                      id={this.state.event.id} />
+                                      id={this.state.event.id}
+                                      showErrors={this.state.showErrors}
+                                      hasValidationErrors={this.eventHasValidationErrors} />
                 </DialogContent>
                 <DialogActions>
                         <Button color="primary" variant="contained" onClick={this.saveEvent}>Save Event</Button>
