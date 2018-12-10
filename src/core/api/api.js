@@ -74,6 +74,8 @@ var ApiClient = function() {
     /**
      * Issues a GET request to the data service.
      * @param {*} params An array of RequestParameter objects.
+     * @param {function} failureCallback A callback in the form of function(status). Status will be
+     * "NetworkError" in the case of a network error.
      */
     async function getRequest(url, params, successCallback, failureCallback) {
         if(successCallback !== undefined && typeof successCallback !== "function") {
@@ -119,7 +121,16 @@ var ApiClient = function() {
         var response = await fetch(`${serviceUrl}/${encodeURI(url)}${queryString}`, {
             method: "GET",
             headers: headers
+          }).catch((reason) => {
+            if(failureCallback) {
+                failureCallback("NetworkError");
+            }
           });
+        
+        if(response === undefined) {
+            //If fetch throws an error, it will result in an undefined response.
+            return;
+        }
 
         if(response.status !== 200) { 
             //API calls requiring authentication result in a 401 when unauthorized.
@@ -156,6 +167,8 @@ var ApiClient = function() {
     /**
      * Issues a POST request to the data service.
      * @param {*} params An array of RequestParameter objects.
+     * @param {function} failureCallback A callback in the form of function(status). Status will be
+     * "NetworkError" in the case of a network error.
      */
     async function postRequest(url, params, successCallback, failureCallback) {
 
@@ -197,7 +210,16 @@ var ApiClient = function() {
             method: "POST",
             headers: headers,
             body: await JSON.stringify(obj)
+          }).catch((reason) => {
+            if(failureCallback) {
+                failureCallback("NetworkError");
+            }
           });
+        
+        if(response === undefined) {
+            //If fetch throws an error, it will result in an undefined response.
+            return;
+        };
 
         if(response.status !== 200) { 
             //API calls requiring authentication result in a 401 when unauthorized.
