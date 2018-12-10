@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { Typography } from '@material-ui/core';
+import Typography from '@material-ui/core/Typography';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import Snackbar from '@material-ui/core/Snackbar';
+import SnackbarContent from '@material-ui/core/SnackbarContent';
 
 import Time from '../core/time';
 
@@ -41,6 +44,19 @@ const styles = theme => ({
         maxWidth: 1250,
         marginLeft: "auto",
         marginRight: "auto"
+    },
+    eventsLoadingIndicatorContainer: {
+        width: "90%",
+        maxWidth: 1243,
+        marginLeft: "auto",
+        marginRight: "auto",
+        padding: 0
+    },
+    progressIndicator: {
+        marginLeft: -3
+    },
+    snackbarContent: {
+        backgroundColor: theme.palette.error.dark
     }
 });
 
@@ -62,8 +78,7 @@ class styledCalendar extends Component {
             showEventEditor: false,
             events: {
                 values: [],
-                error: false,
-                loaded: false
+                status: "loading", //one of: loading, loaded, error
             },
             selectedBackgroundColor: undefined
 
@@ -112,6 +127,8 @@ class styledCalendar extends Component {
 
     componentDidMount() {
 
+        this.validateEventsStatus();
+
         //Calendar potentially shows events from the current month, previous month, and following month, so load events from the previous month to the next month.
         var previousMonth = this.state.selected.currentMonth - 1 <= 0 ? 12 : this.state.selected.currentMonth - 1;
         var previousYear = this.state.selected.currentMonth - 1 <= 0 ? this.state.selected.currentYear - 1 : this.state.selected.currentYear;
@@ -121,6 +138,18 @@ class styledCalendar extends Component {
 
         //Date constructor expects a 0-based month, so substract one where necessary. Events will be loaded into state.
         this.loadEvents(new Date(previousYear, previousMonth - 1, 1, 0, 0, 0), new Date(nextYear, nextMonth - 1, Time.getDaysInMonth(nextMonth, nextYear), 23, 59, 59));
+    }
+
+    componentDidUpdate(prevProps) {
+        this.validateEventsStatus();
+    }
+
+    validateEventsStatus() {
+        if(this.state.events.status !== "loading" &&
+           this.state.events.status !== "loaded" &&
+           this.state.events.status !== "error") {
+               throw new Error("Invalid events status.");
+           }
     }
 
     /**
@@ -275,15 +304,14 @@ class styledCalendar extends Component {
                      });
 
                      draft.events.error = false;
-                     draft.events.loaded = true;
+                     draft.events.status = "loaded";
 
                      Object.freeze(draft.events.values);
                  }));
              }, (statusCode) => {
                  this.setState((state) => produce(state, draft => {
                      draft.events.values = [];
-                     draft.events.error = true;
-                     draft.events.loaded = false;
+                     draft.events.status = "error";
                      Object.freeze(draft.events.values);
                  }));
              }
@@ -427,7 +455,29 @@ class styledCalendar extends Component {
 
         var previousButton = <Button onClick={this.previousMonth} className={this.props.classes.navButton}><Typography variant="h2">&lt;</Typography></Button>
         var nextButton = <Button onClick={this.nextMonth}  className={this.props.classes.navButton}><Typography variant="h2">&gt;</Typography></Button>
+
+        //Display a progress bar while loading and a snackbar if there's an error.
+
+        var linearProgress = undefined;       
+        var snackbar = undefined;
+
+        if(this.state.events.status.toLowerCase() === "loading") {
+            linearProgress = <LinearProgress className={this.props.classes.progressIndicator} />
+        } else if(this.state.events.status.toLowerCase() === "error") {
+            snackbar = <Snackbar open={true}
+                                 anchorOrigin={{ vertical: "top", horizontal: "center" }}>
+                                 <SnackbarContent className={this.props.classes.snackbarContent} 
+                                                  message={<span id="snackbarMessage">Error: Could not load events</span>}
+                                                  aria-labelledby="snackbarMessage"/>
+                       </Snackbar>;
+
+        }
         
+        var eventsLoadingIndicator = <div className={this.props.classes.eventsLoadingIndicatorContainer}>
+                                        {linearProgress}
+                                        {snackbar}
+                                     </div>;
+
         var header = <div>
                         {previousButton}
                         <Typography variant="h3" style={{ display: "inline-block", marginTop: 13, verticalAlign:"top" }}>
@@ -443,6 +493,8 @@ class styledCalendar extends Component {
                                 onColorSelected={ (color) => { this.setSelectedBackgroundColor(color); }}
                             />
                         </div>
+
+                        {eventsLoadingIndicator}
                     </div>;
 
         //Create a calendar that differs based on screen size, utilizing flex boxes and breakpoint-based rules located in
