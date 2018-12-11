@@ -24,11 +24,27 @@ const styles = theme => ({
         color: "black",
         display: "inline-block",
         marginTop: 13,
-        verticalAlign: "top"
+        verticalAlign: "top",
+        minWidth: 375,
+        [theme.breakpoints.down("sm")]: {
+            fontSize: "1.5rem",
+            marginTop: 17,
+            minWidth: 165
+        }
     },
     navButton: {
         display: "inline-block",
-        verticalAlign: "top"
+        verticalAlign: "top",
+        [theme.breakpoints.down("sm")]: {
+            maxWidth: 50,
+            minWidth: 50,
+            marginTop: 2
+        }
+    },
+    navButtonText: {
+        [theme.breakpoints.down("sm")]: {
+            fontSize: "2.4rem"
+        }
     },
     calendar: {
         [theme.breakpoints.down("sm")]: {
@@ -453,8 +469,8 @@ class styledCalendar extends Component {
             rows.push(cols);
         }
 
-        var previousButton = <Button onClick={this.previousMonth} className={this.props.classes.navButton}><Typography variant="h2">&lt;</Typography></Button>
-        var nextButton = <Button onClick={this.nextMonth}  className={this.props.classes.navButton}><Typography variant="h2">&gt;</Typography></Button>
+        var previousButton = <Button onClick={this.previousMonth} className={this.props.classes.navButton}><Typography className={this.props.classes.navButtonText} variant="h2">&lt;</Typography></Button>
+        var nextButton = <Button onClick={this.nextMonth}  className={this.props.classes.navButton}><Typography variant="h2" className={this.props.classes.navButtonText}>&gt;</Typography></Button>
 
         //Display a progress bar while loading and a snackbar if there's an error.
 
@@ -480,7 +496,7 @@ class styledCalendar extends Component {
 
         var header = <div>
                         {previousButton}
-                        <Typography variant="h3" style={{ display: "inline-block", marginTop: 13, verticalAlign:"top" }}>
+                        <Typography variant="h3" className={this.props.classes.title}>
                         {Time.getMonthName(currentMonth)} {currentYear}</Typography>
                         {nextButton}
 

@@ -8,28 +8,22 @@ import DateSelector from '../components/DateSelector';
 
 const styles = theme => ({
     eventInput: {
-        minWidth: 375,
+        width: "100%",
         marginBottom: 15
     },
     descriptionInput: {
-        minWidth: 375,
-        maxWidth: 375,
+        width: "100%",
         marginBottom: 15
     },
     dateLabel: {
-        minWidth: 100,
-        minHeight: 50,
-        maxWidth: 100,
-        background: "#CCCCCC",
-        display: "inline-flex",
-        justifyContent: "center",
-        alignItems: "center",
-        verticalAlign: "top",
-        marginRight: 20
+        marginBottom: 20,
+        marginTop: 15,
+        fontWeight: 600
 
     },
     dateSelector: {
-        display: "inline-block"
+        display: "inline-block",
+        width: "100%"
     }
 });
 
@@ -194,7 +188,7 @@ class eventInformation extends Component {
                     <TextField id="description" label="Description" multiline className={this.props.classes.descriptionInput} value={this.state.description} onInput={this.onInput}></TextField>
                 </div>
                 <div>
-                    <div className={this.props.classes.dateLabel}>Start</div>
+                    <div className={this.props.classes.dateLabel}>Event Date</div>
                     <div className={this.props.classes.dateSelector}>
                         <DateSelector notifyDateChanged={this.notifyDateChanged} 
                                       initialMonth={this.props.initialMonth}

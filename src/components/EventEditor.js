@@ -25,8 +25,7 @@ const styles = theme => ({
         marginTop: 10
     },
     dialog: {
-        minWidth:430,
-        maxWidth: 430
+        width: "100%"
     },
     eventDisplay: {
         display: "inline-flex",
@@ -36,7 +35,8 @@ const styles = theme => ({
         justifyContent: "center"
     },
     eventTitle: {
-        fontWeight: "bolder"
+        fontWeight: "bolder",
+        marginTop: 8
     },
     eventDescription: {
         fontSize: "0.85rem"

@@ -7,17 +7,22 @@ import MenuItem from '@material-ui/core/MenuItem';
 
 import Time from '../core/time';
 
+const margin = 10;
+
 const styles = theme => ({
+    controlDiv: {
+        width: "100%"
+    },
     monthInput: {
-        maxWidth: 150,
-        marginRight: 10
+        width: "40%",
+        marginRight: margin
     },
     dayInput: {
-        maxWidth: 125,
-        marginRight: 10
+        width: "25%",
+        marginRight: margin
     },
     yearInput: {
-        maxWidth: 75
+        width: `calc(35% - ${margin*2}px)`
     }
 });
 
@@ -250,7 +255,7 @@ class dateSelector extends Component {
 
     render() {
         return(
-            <div>
+            <div className={this.props.classes.controlDiv}>
                 <TextField select label="Month" className={this.props.classes.monthInput} value={this.state.selectedMonth} onChange={this.onChange.bind(this, "selectedMonth")}>
                     {this.getMonthOptions()}
                 </TextField>

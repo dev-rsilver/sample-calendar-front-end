@@ -19,7 +19,8 @@ const styles = {
     },
     card: {
         textAlign: "left",
-        minWidth: 500,
+        maxWidth: 500,
+        width:"95%",
         paddingTop: 20,
         paddingBottom: 20
     },
@@ -29,12 +30,12 @@ const styles = {
         maxWidth: "90%"
     },
     inputs: {
-        minWidth: 400,
+        width: "100%",
+        maxWidth: 400,
         marginBottom: 20
     },
     signInButton: {
-        float: "right",
-        margin: 10
+        float: "right"
     },
     errorContainer: {
         marginTop: 15,
