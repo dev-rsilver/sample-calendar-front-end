@@ -15,6 +15,10 @@ class deleteDialogContent extends Component {
     constructor(props) {
         super(props);
 
+        if(this.props.title === undefined) {
+            throw new Error("'title' prop must be defined.");
+        }
+
         if(this.props.onDelete !== undefined && typeof this.props.onDelete !== "function") {
             throw new Error("onDelete must be a function.");
         }

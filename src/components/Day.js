@@ -23,6 +23,14 @@ const styles = {
 class styledDayDiv extends Component {
 
 
+    constructor(props) {
+        super(props);
+
+        if(props.events === undefined) {
+            throw new Error("'events' prop must be defined.");
+        }
+    }
+
     selectDay = () => {
         if(this.props.onSelect && typeof this.props.onSelect === "function") {
             this.props.onSelect(this.props.month, this.props.day, this.props.year);

@@ -18,6 +18,10 @@ class colorSelector extends Component {
     constructor(props) {
         super(props);
 
+        if(this.props.colors === undefined) {
+            throw new Error("'colors' prop must be provided and must be an array of hexadecimal colors");
+        }
+
         if(this.props.colors !== undefined) {
             //Validate provided colors.
             if(!Array.isArray(this.props.colors)) {
@@ -39,10 +43,19 @@ class colorSelector extends Component {
         }
 
         //Notify the consuming component that the color has changed.
-        this.props.onColorSelected(this.state.selectedColor);
+        if(this.props.onColorSelected) {
+            this.props.onColorSelected(this.state.selectedColor);
+        }
 
         if(this.props.onColorSelected !== undefined && typeof this.props.onColorSelected !== "function") {
             throw new Error("onColorSelected must be a function.");
+        }
+
+        //Methods for testing.
+        if(props.getMethods) {
+            props.getMethods({
+                isHexadecimal: this.isHexadecimal.bind(this)
+            });
         }
     }
 
@@ -57,7 +70,7 @@ class colorSelector extends Component {
             color = color.slice(1, color.length);
         }
         
-        if(color.length < 6) {
+        if(color.length < 6 || color.length > 6) {
             errors++;
         }
 
@@ -149,6 +162,8 @@ const StyledColorSelector = withStyles(styles)(colorSelector);
  * 
  * @param {array} colors Property: An array of 6-digit hexadecimal colors.
  * @param {function} onColorSelected Property: A callback in the form of function(color) that is called when a color is selected
+ * 
+ * @param {function} getMethods A callback in the form of function(object) which provides an object containing methods that can be tested.
  */
 class ColorSelector extends Component {
 

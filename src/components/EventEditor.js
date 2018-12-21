@@ -74,6 +74,13 @@ class eventEditor extends Component {
     constructor(props) {
         super(props);
 
+        if(props.date === undefined || 
+           props.date.month === undefined || 
+           props.date.day === undefined || 
+           props.date.year === undefined) {
+            throw new Error("'date' prop must be defined with format { month: number, day: number, year: number }");
+        }
+        
         this.state = {
             mode: "list", //One of: list, new, edit, delete
 
@@ -92,6 +99,8 @@ class eventEditor extends Component {
              */
             eventsDetails: []
         }
+
+        this.componentUnmounted = false;
     }
 
     async componentDidMount() {
@@ -100,11 +109,17 @@ class eventEditor extends Component {
 
         var eventsDetails = await this.getEventsDetails();
        
-        this.setState((state) => produce(state, draft => { 
-            eventsDetails.forEach((value) => {
-                draft.eventsDetails.push(Object.freeze(value));
-            })
-        }));
+        if(!this.componentUnmounted) {
+            this.setState((state) => produce(state, draft => { 
+                eventsDetails.forEach((value) => {
+                    draft.eventsDetails.push(Object.freeze(value));
+                })
+            }));
+        }
+    }
+
+    componentWillUnmount() {
+        this.componentUnmounted = true;
     }
 
     getEventsDetails = async () => {

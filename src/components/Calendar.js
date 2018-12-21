@@ -99,6 +99,15 @@ class styledCalendar extends Component {
             selectedBackgroundColor: undefined
 
         }
+        
+        //Methods for testing.
+        if(props.getMethods) {
+            props.getMethods({
+                addEvent: this.addEvent.bind(this),
+                saveEvent: this.saveEvent.bind(this),
+                deleteEvent: this.deleteEvent.bind(this)
+            });
+        }
     }
 
 
@@ -113,12 +122,20 @@ class styledCalendar extends Component {
 
         do {
             var randomNumbers = new Uint8Array(len);
-            window.crypto.getRandomValues(randomNumbers);
-
-            for(var i = 0; i < randomNumbers.length; i++) {
-                randomNumbers[i] = randomNumbers[i] % 10;
+            
+            if(window.crypto) {
+                window.crypto.getRandomValues(randomNumbers);
+                
+                for(var i = 0; i < randomNumbers.length; i++) {
+                    randomNumbers[i] = randomNumbers[i] % 10;
+                }
+            } else {
+                randomNumbers = [];
+                for(var k = 0; k < len; k++) {
+                    randomNumbers.push((Math.random() * 10).toFixed(0));
+                }
             }
-
+            
             id = randomNumbers.join('');
 
             for(i = 0; i < events.length; i++) {
@@ -136,7 +153,7 @@ class styledCalendar extends Component {
             loops++;
 
         } while(idFound);
-
+        
         return id;
         
     }
@@ -182,23 +199,32 @@ class styledCalendar extends Component {
     /**
     * Adds an event to the calendar. Demo application does not include a database, so events that are added
     * by the user are not persisted.
-    * @param {object} event { id: string, title: string, description: string, startDate: string, stopDate: string }
-    * Dates expected in date string format such as "mm/dd/yyyy hh:mm:ss".
+    * @param {object} event { id: string, title: string, description: string, date: string }
+    * Date expected in date string format such as "mm/dd/yyyy hh:mm:ss".
     */
     addEvent = function(event) {
+
+        if(event === undefined) {
+            throw new Error("Event must be defined.");
+        }
+
+        var transformedEvent = {
+            id: this.generateId(10, this.state.events.values),
+            title: event.title,
+            description: event.description,
+            isRemote: false, //Event was created by user rather than retrieved via the API
+            startDate: Date.parse(event.date), //Events added by user have the same start and stop date
+            stopDate: Date.parse(event.date)
+        };
+
         this.setState((state) => produce(state, draft => {
-            draft.events.values.push({
-                id: this.generateId(10, state.events.values),
-                title: event.title,
-                description: event.description,
-                isRemote: false, //Event was created by user rather than retrieved via the API
-                startDate: Date.parse(event.date), //Events added by user have the same start and stop date
-                stopDate: Date.parse(event.date)
-            });
+            draft.events.values.push(transformedEvent);
         }), () => {
             Object.freeze(this.state.events.values[this.state.events.values.length - 1]);
             Object.freeze(this.state.events.values);
         });
+
+        return { ...transformedEvent };
     }
 
 
@@ -565,12 +591,18 @@ class styledCalendar extends Component {
 
 
 const StyledCalendar = withStyles(styles)(styledCalendar);
+
+/**
+ * Calendar component.
+ *  
+ * @param {function} getMethods A callback in the form of function(object) which provides an object containing methods that can be tested.
+ * */
 class Calendar extends Component {
 
     render() {
         
         return <StyledCalendar {...this.props} />
-            
+
     }
    
 }
