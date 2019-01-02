@@ -38,14 +38,16 @@ const styles = {
         float: "right"
     },
     errorContainer: {
-        marginTop: 15,
-        display: "inline-block"
+        display: "inline-block",
+        verticalAlign: "top"
     },
     errorText: {
-        fontSize: "0.8rem"
+        fontSize: "0.8rem",
+        marginLeft: 23,
+        marginTop: 10
     },
     note: {
-        fontSize: "0.85rem",
+        fontSize: "0.8rem",
         marginTop: 20
     }
 
@@ -96,9 +98,20 @@ class signInCard extends Component {
             //Set the token in the main app that'll be used for future API calls.
             this.context.setToken(result);
 
-        }, () => {
+        }, (status) => {
+
+            var errorMessage = "";
+
+            switch(status) {
+                case "NetworkError": 
+                    errorMessage = "An error occurred. Please wait and try again.";
+                    break;
+                default: 
+                    errorMessage = "Username or password is incorrect.";
+            }
+
             this.setState((state) => produce(state, draft => {
-                draft.errors.message = "Username or password is incorrect.";
+                draft.errors.message = errorMessage;
             }));
         });
     }
@@ -185,7 +198,7 @@ class signInCard extends Component {
             </CardContent>
         </Card>
         <Typography className={this.props.classes.note}>
-                This application is provided as-is and is for demonstration purposes only.
+                This application is a demonstration, not for actual use.
         </Typography>
         
         </React.Fragment>);
