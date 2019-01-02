@@ -256,3 +256,33 @@ it('deletes event', () => {
     
     ReactDOM.unmountComponentAtNode(div);
 });
+
+it('generates id failure', () => {
+
+    //Test checks id collisions.
+
+    const div = document.createElement('div');
+    
+    var methodsObject = {};
+
+    var component = <MuiThemeProvider theme={themeObj}>
+                        <Calendar getMethods={ (methodsObj) => methodsObject = methodsObj } />
+                    </MuiThemeProvider>;
+
+    ReactDOM.render(component, div);
+
+    //Try to generate a new id one character in length, while providing an array of events that
+    //covers ids 0-9, which should produce too many collisions.
+
+    expect(() => methodsObject.generateId(1, [{ id: "0" }, 
+                                              { id: "1" }, 
+                                              { id: "2" }, 
+                                              { id: "3" }, 
+                                              { id: "4" }, 
+                                              { id: "5" }, 
+                                              { id: "6" }, 
+                                              { id: "7" }, 
+                                              { id: "8" }, 
+                                              { id: "9" }])).toThrow();
+
+});

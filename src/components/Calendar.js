@@ -105,7 +105,8 @@ class styledCalendar extends Component {
             props.getMethods({
                 addEvent: this.addEvent.bind(this),
                 saveEvent: this.saveEvent.bind(this),
-                deleteEvent: this.deleteEvent.bind(this)
+                deleteEvent: this.deleteEvent.bind(this),
+                generateId: this.generateId.bind(this)
             });
         }
     }
@@ -127,12 +128,19 @@ class styledCalendar extends Component {
                 window.crypto.getRandomValues(randomNumbers);
                 
                 for(var i = 0; i < randomNumbers.length; i++) {
-                    randomNumbers[i] = randomNumbers[i] % 10;
+                    randomNumbers[i] = Math.trunc(randomNumbers[i] % 10);
                 }
             } else {
                 randomNumbers = [];
                 for(var k = 0; k < len; k++) {
-                    randomNumbers.push((Math.random() * 10).toFixed(0));
+
+                    var num = (Math.random() * 10).toFixed(0);
+
+                    if(num < 10) {
+                        randomNumbers.push(num);
+                    } else {
+                        k--;
+                    }
                 }
             }
             
@@ -141,11 +149,12 @@ class styledCalendar extends Component {
             for(i = 0; i < events.length; i++) {
                 if(events[i].id.toLowerCase() === id.toLowerCase()) {
                     idFound = true;
+                    break;
                 } else {
                     idFound = false;
                 }
             }
-
+            
             if(loops > 100) {
                 throw new Error("Too many id collisions.");
             }
