@@ -62,7 +62,9 @@ class dateSelector extends Component {
             draft.selectedMonth = date.getMonth() + 1;
             draft.selectedDay = date.getDate();
             draft.selectedYear = date.getFullYear().toString();
-        }));
+        }), () => {
+            this.dataChanged(this.state.selectedMonth, this.state.selectedDay, this.state.selectedYear);
+        });
     }
 
     componentDidUpdate(prevProps) {
@@ -104,7 +106,7 @@ class dateSelector extends Component {
         var value = e.target.value;
         
         if(id === "selectedYear") {
-
+            
             //Try to set a date. A simple integer parse check is insufficient because, for example, "2018a" would pass.
             var date = new Date(value, 1).getTime();
             
